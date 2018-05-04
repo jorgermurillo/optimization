@@ -114,19 +114,20 @@ for k, v in MRC_files.items():
 
     instance['dataset_size'] = dataset_size
     instance['per_datum_size'] = per_datum_size
-
+    print("Average object size: " + str(per_datum_size))
     print(instance)
     redis_instances[port] = instance
 
-average_memory_per_object = float(cumulative_memory)/total_objects
+#average_memory_per_object = float(cumulative_memory)/total_objects
 
+average_memory_per_object = float(cumulative_memory)/total_objects
 
 
 first_port = MRCs[0][0].service_id
 print("First port: " + str(first_port))
 
 
-
+'''
 r = redis.Redis(host=HOST, port=first_port)
 total_memory = r.info(section = "memory")['total_system_memory']
 print("Total memory of the system: " + str(total_memory) )
@@ -135,7 +136,7 @@ total_objects_per_system = float(total_memory)/average_memory_per_object
 
 print('Total objects per system: ' + str(total_objects_per_system))
 print("Average memory per object: "+ str(average_memory_per_object))
-
+'''
 #x = HillClimbingSolverRedis(MRCs, int(total_objects_per_system))
 
 x = HillClimbingSolverRedis(MRCs, 500)
@@ -143,16 +144,16 @@ x = HillClimbingSolverRedis(MRCs, 500)
 
 print("Solver!!!")
 
-y = x.search_max()
+Optimized_memories = x.search_max()
 
 print("Solved!!")
-print("Memory allocation: " + str(y))
+print("Memory allocation: " + str(Optimized_memories))
 print("Value of sumation function: " + str(x.evaluate_function()))
 print("Total Blocks = %d"%(x.get_sum_of_x()))
 
 
 print("\n")
-for e in y:
+for e in Optimized_memories:
 
     #r = redis.Redis(host=HOST, port=e[0])
 
@@ -161,9 +162,11 @@ for e in y:
 
 
     alloc = int(e[1])
-
+    # This shows how many 'blocks' we should allocate to each Redis instance
     print("Block allocation: " + str(alloc))
+    # This shows how much memory we should allocate to each Redis instance
     memory =  int(alloc*average_memory_per_object)
+
     print("New memory: %d  (%f  mb)"%(memory, float(memory)/1024/1024))
     #r.config_set("maxmemory", str(memory))
     print("\n")
