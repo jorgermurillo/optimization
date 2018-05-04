@@ -24,8 +24,8 @@ class HillClimbingSolver:
             for e in list:
                 # assert( issubclass(e[0],UtilityFunc) )
 
-                e[0].randomizeindex()
-                #e[0].set_index(5)
+                #e[0].randomizeindex()
+                e[0].set_index(0)
             if self.get_sum_of_x() <= self.max_memory:
                 break
 
