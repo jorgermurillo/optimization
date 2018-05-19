@@ -114,14 +114,17 @@ for k, v in MRC_files.items():
 
     instance['dataset_size'] = dataset_size
     instance['per_datum_size'] = per_datum_size
+
     print("Average object size: " + str(per_datum_size))
     print(instance)
     redis_instances[port] = instance
 
 #average_memory_per_object = float(cumulative_memory)/total_objects
 
-average_memory_per_object = float(cumulative_memory)/total_objects
+print("Total objects across all instances: " + str(total_objects))
 
+average_memory_per_object = float(cumulative_memory)/total_objects
+print("Average size of each object: " + str(average_memory_per_object))
 
 first_port = MRCs[0][0].service_id
 print("First port: " + str(first_port))
@@ -139,7 +142,7 @@ print("Average memory per object: "+ str(average_memory_per_object))
 '''
 #x = HillClimbingSolverRedis(MRCs, int(total_objects_per_system))
 
-x = HillClimbingSolverRedis(MRCs, 500)
+x = HillClimbingSolverRedis(MRCs, 100)
 
 
 print("Solver!!!")
