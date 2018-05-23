@@ -142,7 +142,7 @@ print("Average memory per object: "+ str(average_memory_per_object))
 '''
 #x = HillClimbingSolverRedis(MRCs, int(total_objects_per_system))
 
-memory = Total_memory/average_memory_per_object
+memory = int(Total_memory/average_memory_per_object)
 print("Max memory (number of objects) for the solver: %f"%(memory))
 x = HillClimbingSolverRedis(MRCs, memory)
 
