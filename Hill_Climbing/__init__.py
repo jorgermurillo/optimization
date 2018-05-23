@@ -80,6 +80,8 @@ MRC_files = getMRCcurves2()
 MRCs = []
 weight = 1
 frequency = 1
+#Total_memory is given in bytes
+Total_memory = 524288000 # 500MB
 
 redis_instances = {}
 
@@ -100,12 +102,10 @@ for k, v in MRC_files.items():
     # Add the number of keys in this Redis instance to the total count
     total_objects += _dbsize
 
-    #print(_dbsize)
     instance['dbsize'] = _dbsize
     print("PORT: " + str(port))
 
     _info = r.info(section="memory")
-    #print(_info)
 
     dataset_size = _info['used_memory_dataset']
     #Add the amount of memory used by this Redis dataset to the total amount
@@ -142,8 +142,9 @@ print("Average memory per object: "+ str(average_memory_per_object))
 '''
 #x = HillClimbingSolverRedis(MRCs, int(total_objects_per_system))
 
-x = HillClimbingSolverRedis(MRCs, int(total_objects))
-
+memory = Total_memory/average_memory_per_object
+print("Max memory (number of objects) for the solver: %f"%(memory))
+x = HillClimbingSolverRedis(MRCs, memory)
 
 print("Solver!!!")
 
