@@ -159,7 +159,7 @@ print("Total Blocks = %d"%(x.get_sum_of_x()))
 print("\n")
 for e in Optimized_memories:
 
-    #r = redis.Redis(host=HOST, port=e[0])
+    r = redis.Redis(host=HOST, port=e[0])
 
     print("Instance with port: " + str(e[0]))
 
@@ -172,7 +172,7 @@ for e in Optimized_memories:
     memory =  int(alloc*average_memory_per_object)
 
     print("New memory: %d  (%f  mb)"%(memory, float(memory)/1024/1024))
-    #r.config_set("maxmemory", str(memory))
+    r.config_set("maxmemory", str(memory))
     print("\n")
 
 
