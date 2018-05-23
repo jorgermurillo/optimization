@@ -142,9 +142,9 @@ print("Average memory per object: "+ str(average_memory_per_object))
 '''
 #x = HillClimbingSolverRedis(MRCs, int(total_objects_per_system))
 
-memory = int(Total_memory/average_memory_per_object)
-print("Max memory (number of objects) for the solver: %f"%(memory))
-x = HillClimbingSolverRedis(MRCs, memory)
+Total_blocks_solver = int(Total_memory / average_memory_per_object)
+print("Number of blocks for the solver: %f" % (Total_blocks_solver))
+x = HillClimbingSolverRedis(MRCs, Total_blocks_solver)
 
 print("Solver!!!")
 
@@ -154,26 +154,33 @@ print("Solved!!")
 print("Memory allocation: " + str(Optimized_memories))
 print("Value of sumation function: " + str(x.evaluate_function()))
 print("Total Blocks = %d"%(x.get_sum_of_x()))
-
-
+#Remaining memory after allocation (in certain cases not all the memory is partitioned, when the MRCs have few lines with small sizes for cache memory)
+remaining = int(Total_blocks_solver - x.get_sum_of_x())
+print("Remaining blocks: %d"%(remaining))
+#added_blocks is the amount of extra blocks that each instance gets when
+added_blocks = int(remaining/len(Optimized_memories))
+print("Extra blocks per instance: %d"%(added_blocks))
 print("\n")
 for e in Optimized_memories:
 
-    r = redis.Redis(host=HOST, port=e[0])
+    #r = redis.Redis(host=HOST, port=e[0])
 
     print("Instance with port: " + str(e[0]))
 
 
-
-    alloc = int(e[1])
+    if added_blocks > 1:
+        alloc = int(e[1]) + added_blocks
+    else:
+        alloc = int(e[1])
     # This shows how many 'blocks' we should allocate to each Redis instance
     print("Block allocation: " + str(alloc))
     # This shows how much memory we should allocate to each Redis instance
-    memory =  int(alloc*average_memory_per_object)
+    Total_blocks_solver =  int(alloc * average_memory_per_object)
 
-    print("New memory: %d  (%f  mb)"%(memory, float(memory)/1024/1024))
-    r.config_set("maxmemory", str(memory))
+    print("New memory: %d  (%f  mb)" % (Total_blocks_solver, float(Total_blocks_solver) / 1024 / 1024))
+    #r.config_set("maxmemory", str(memory))
     print("\n")
+
 
 
 
