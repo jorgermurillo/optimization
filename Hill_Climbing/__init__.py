@@ -81,8 +81,8 @@ MRCs = []
 weight = 1
 frequency = 1
 #Total_memory is given in bytes
-Total_memory = 524288000 # 500MB
-
+#Total_memory = 524288000 # 500MB
+Total_memory = 1048576000 #1000 MB
 redis_instances = {}
 
 #total number of keys across all Redis instances
