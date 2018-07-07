@@ -100,17 +100,17 @@ for k, v in MRC_files.items():
     instance["weight"] = weight
     port = k
 
-    #r = redis.Redis(host=HOST, port=port)
-    _dbsize = 30#r.dbsize()
+    r = redis.Redis(host=HOST, port=port)
+    _dbsize = r.dbsize()
     # Add the number of keys in this Redis instance to the total count
     total_objects += _dbsize
 
     instance['dbsize'] = _dbsize
     print("PORT: " + str(port))
 
-    #_info = r.info(section="memory")
+    _info = r.info(section="memory")
 
-    dataset_size = 100#_info['used_memory_dataset']
+    dataset_size = _info['used_memory_dataset']
     #Add the amount of memory used by this Redis dataset to the total amount
     cumulative_memory += dataset_size
     per_datum_size = float(dataset_size) / _dbsize
@@ -170,7 +170,7 @@ print("Extra blocks per instance: %d"%(added_blocks))
 print("\n")
 for e in solution:
 
-    #r = redis.Redis(host=HOST, port=e[0])
+    r = redis.Redis(host=HOST, port=e[0])
 
     print("Instance with port: " + str(e[0]))
 
@@ -185,7 +185,7 @@ for e in solution:
     Total_blocks_solver =  int(alloc * average_memory_per_object)
 
     print("New memory: %d  (%f  mb)" % (Total_blocks_solver, float(Total_blocks_solver) / 1024 / 1024))
-    #r.config_set("maxmemory", str(memory))
+    r.config_set("maxmemory", str(memory))
     print("\n")
     
 
