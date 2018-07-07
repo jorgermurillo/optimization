@@ -1,13 +1,12 @@
 import numpy as np
 import random
 
-class UtilityFunc:
+class UtilityFunction(object):
 
-    values = None   # numpy array
-    index = 0   #int
-    length = 0  #int
+    values = None   # 2-D numpy array with shape (n,2). This holds the x-values and y-values.
+    length = 0  # length of array
 
-    def __init__(self,Values) -> None:
+    def __init__(self,Values):
         super().__init__()
 
         if isinstance(Values,np.ndarray):
@@ -17,80 +16,66 @@ class UtilityFunc:
             self.readfromfile(Values)
             self.length = self.values.shape[0]
 
-    def readfromfile(self,fileName,rows_to_skip = 0):
+    def readfromfile(self, fileName, rows_to_skip=0):
         file = open(fileName, 'r')
-        self.values = np.loadtxt(file, delimiter=',', skiprows= rows_to_skip)
+        self.values = np.loadtxt(file, delimiter=',', skiprows=rows_to_skip)
 
-    def randomizeindex(self):
-        if len(self.values.shape) == 1:
-            self.index == 0
-        self.index = random.randint(0,self.length-1)
-
-    def evaluate_at_index_internal(self):
-        return self.values[self.index,1]
-
-    def evaluate_at_index(self):
-        if len(self.values.shape) == 1:
-            return self.values[1]
-        return self.evaluate_at_index_internal()
-
-    def return_x_value(self):
-        #print(self.values)
-        #print(len(self.values.shape))
-        if len(self.values.shape) == 1:
-            return self.values[0]
-        return self.values[self.index,0]
-
-    def set_index(self,x):
-        if len(self.values.shape) == 1:
-            return False
-
-        if x >= self.length or x < 0:
-            return False
-        self.index = x
-        return True
-
-    def increment_index(self, x):
-        if len(self.values.shape) == 1:
-            return
-
-        if (self.index + x) >= self.length:
-            return
+    def evaluate_function(self,x_value):
+        # If there is more than one row (which means that self.values is a 2D array)
+        if len(self.values.shape) == 2:
+            try:
+                # Search  x_value in the first row. If it doesn't exist in self.values it will raise an exception.
+                position = np.where(self.values[:,0] == x_value)
+                # Lets extract the integer reflecting the position from the tuple of arrays (?)
+                row = position[0][0]
+                return self.values[row, 1]
+            except:
+                print("The function can't be evaluated at this x_value.\n")
         else:
-            self.index += x
+            try:
+                # This next statemnet is just to check whether x_value exists in the 1-D array. if it does, we know where the y_value is
+                position = np.where(self.values == x_value)
+                #row = position[0][0]
+                return self.values[1]
+            except:
+                print("The function can't be evaluated at this x_value. (1-D array)\n")
 
-    def decrement_index(self, x):
-        if len(self.values.shape) == 1:
-            return self.values[1]
+    def return_x_value(self,index):
+        if index < 0:
+            raise IndexError("Index can't be less than zero!")
+        if index >= self.length:
+            raise IndexError("Index can't be equal or larger than the function length!")
+        return self.values[index,0]
 
-        if (self.index - x) < 0:
-            return
-        else:
-            self.index -= x
+    def return_y_value(self,index):
+        if index < 0:
+            raise IndexError("Index can't be less than zero!")
+        if index >= self.length:
+            raise IndexError("Index can't be equal or larger than the function length!")
+        return self.values[index,1]
 
-    def step_index_up(self):
-        self.increment_index(1)
 
-    def step_index_down(self):
-        self.decrement_index(1)
+    def find_nearest(array, value):
+        array = np.asarray(array)
+        idx = (np.abs(array - value)).argmin()
+        return array[idx]
 
-class BackendAgnosticUtilityFunc(UtilityFunc):
+class BackendAgnosticUtilityFunction(UtilityFunction):
 
-    request_freq = 0 # frequency of requests for this service
-    service_id = 0 # id
+    request_freq = 0
 
-    def __init__(self, Values, freq, id) -> None:
+
+    def __init__(self,Values, freq = 1):
         super().__init__(Values)
-        if freq > 0:
+        if freq >0:
             self.request_freq = freq
         else:
             self.request_freq = 0
-        self.service_id = id
 
-
-    def evaluate_at_index_internal(self):
-        #print("Hey " + str(self.index))
-
-
-        tmp = self.request_freq * (1 - self.values[self.index, 1])
+    def output(self,index):
+        if index < 0:
+            raise IndexError("Index can't be less than zero!")
+        if index >= self.length:
+            raise IndexError("Index can't be equal or larger than the function length!")
+        tmp = self.request_freq * (1 - self.return_y_value(index))
         return tmp

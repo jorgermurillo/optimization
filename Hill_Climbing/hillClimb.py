@@ -1,219 +1,182 @@
-from function import UtilityFunc
-class HillClimbingSolver:
+from collections import OrderedDict
+from function import UtilityFunction
+import itertools
+from time import sleep
 
-    utilityFunctions = None # List of tuples!
+class HillClimbingSolver(object):
+
+    utilityFunctions = OrderedDict()
     max_memory = 0
+    total_memory = 0
+    state = None # Could be either "Max" or "Min"
 
-    def __init__(self, list, max_memory):
+    def __init__(self, max_memory):
         super().__init__()
-        # list should be a list of tuples (UtilityFunction, float)
-        for e in list:
-            # assert( issubclass(e[0],UtilityFunc) )
-            #e[0].randomizeindex()
-            e[0].set_index(0)
-            try:
-                float(e[1])
-            except TypeError:
-                print("Error with the Type of one of the weights")
-        self.utilityFunctions = list
         self.max_memory = max_memory
-        #print("Sum of x values: %f"%(self.get_sum_of_x()))
-        # Initialize the indices of each function
-        while True:
-            #print("H")
-            for e in list:
-                # assert( issubclass(e[0],UtilityFunc) )
-
-                #e[0].randomizeindex()
-                e[0].set_index(0)
-            if self.get_sum_of_x() <= self.max_memory:
-                break
 
 
-        list = None
+    def add_function(self, function, id, min_memory = 0):
+        tmp = {}
+        index = 0
+        tmp["function"] = function
+        tmp["Min_memory"] = min_memory
+        if self.total_memory + min_memory > self.max_memory:
+            raise Exception("Problems with max memory and the minimum memories of the functions")
+        self.total_memory += min_memory
+        self.utilityFunctions[id] = tmp
 
+        while function.return_x_value(index) < min_memory:
+            index += 1
+            if index > function.length -1:
+                raise Exception("The value of min_memory given doesn't exist in this function")
+        tmp["index"] = index
 
-    def rand_indeces(self):
-        if len(self.utilityFunctions) == 0:
-            return
-        for e in self.utilityFunctions:
-            e[0].randomizeindex()
-
-    def search_max(self):
-        if len(self.utilityFunctions) == 0:
-            return
-
-        index_changed = False
-
-        current_max = self.evaluate_function()
-        current_state = [x[0].index for x in self.utilityFunctions]
-        candidate_values = [x[0].index for x in self.utilityFunctions]
-        candidate_max_value = float("-inf")
-
-        while True:
-            for e in self.utilityFunctions:
-                e[0].step_index_up()
-                tmp = self.evaluate_function()
-                # check whether the change increased the sum of utility functions and whether the mx amount of memory
-                # surpassed
-                if tmp > current_max and self.get_sum_of_x() <= self.max_memory and tmp > candidate_max_value:
-                    #print("sum of x values: %7d \nValue of function: %4f."%(self.get_sum_of_x(),self.evaluate_function()))
-                    candidate_values = [x[0].index for x in self.utilityFunctions]
-                    index_changed = True
-                    candidate_max_value = tmp
-                e[0].step_index_down()
-
-            for e in self.utilityFunctions:
-                e[0].step_index_down()
-                tmp = self.evaluate_function()
-                if tmp > current_max and self.get_sum_of_x() <= self.max_memory and tmp > candidate_max_value:
-                    #print("sum of x values: %7d \nValue of function: %4f."%(self.get_sum_of_x(),self.evaluate_function()))
-                    candidate_values = [x[0].index for x in self.utilityFunctions]
-                    index_changed = True
-                    candidate_max_value = tmp
-                e[0].step_index_up()
-
-            if index_changed:
-                for i in range(len(self.utilityFunctions)):
-                    self.utilityFunctions[i][0].index = candidate_values[i]
-
-                current_state = candidate_values
-                #print(current_state)
-                current_max = self.evaluate_function()
-                index_changed = False
-            else:
-                # Iteration is over
-                r = [x[0].return_x_value() for x in self.utilityFunctions]
-                # Here we are leaving the index of each function to the value that maximizes the sum
-                for i in range(len(self.utilityFunctions)):
-                    self.utilityFunctions[i][0].index = current_state[i]
-                #current_state are the indeces of each function, NOT the x values
-                return current_state
-                #return r
-
-    def search_min(self):
-        if len(self.utilityFunctions) == 0:
-            return
-
-        index_changed = False
-
-        current_min = self.evaluate_function()
-        current_state = [x[0].index for x in self.utilityFunctions]
-        candidate_values = [x[0].index for x in self.utilityFunctions]
-        candidate_min_value = float("inf")
-
-        while True:
-            for e in self.utilityFunctions:
-                e[0].step_index_up()
-                tmp = self.evaluate_function()
-                # check whether the change increased the sum of utility functions and whether the mx amount of memory
-                # surpassed
-                if tmp < current_min and self.get_sum_of_x() <= self.max_memory and tmp < candidate_min_value:
-                    #print("sum of x values: %7d \nValue of function: %4f."%(self.get_sum_of_x(),self.evaluate_function()))
-                    candidate_values = [x[0].index for x in self.utilityFunctions]
-                    index_changed = True
-                    candidate_min_value = tmp
-                e[0].step_index_down()
-
-            for e in self.utilityFunctions:
-                e[0].step_index_down()
-                tmp = self.evaluate_function()
-                if tmp < current_min and self.get_sum_of_x() <= self.max_memory and tmp < candidate_min_value:
-                    #print("sum of x values: %7d \nValue of function: %4f."%(self.get_sum_of_x(),self.evaluate_function()))
-                    candidate_values = [x[0].index for x in self.utilityFunctions]
-                    index_changed = True
-                    candidate_min_value = tmp
-                e[0].step_index_up()
-
-            if index_changed:
-                for i in range(len(self.utilityFunctions)):
-                    self.utilityFunctions[i][0].index = candidate_values[i]
-
-                current_state = candidate_values
-                #print(current_state)
-                current_max = self.evaluate_function()
-                index_changed = False
-            else:
-                # Iteration is over
-                r = [x[0].return_x_value() for x in self.utilityFunctions]
-                # Here we are leaving the index of each function to the value that maximizes the sum
-                for i in range(len(self.utilityFunctions)):
-                    self.utilityFunctions[i][0].index = current_state[i]
-
-                return current_state
-                #return r
-
-
-    def get_sum_of_x(self):
+    def evaluate(self):
         sum = 0
         for e in self.utilityFunctions:
-            sum += e[0].return_x_value()
+            index = self.utilityFunctions[e]['index']
+            eval = self.utilityFunctions[e]['function'].output(index)
+            sum += eval
         return sum
 
-    def get_x_values(self):
-        x_values = [x[0].return_x_value() for x in self.utilityFunctions]
-        return x_values
-
-    def evaluate_function(self):
+    # Evaluate the sumation of the functions at the given indeces
+    def evaluate_list(self, index_list):
+        if len(index_list) != len(self.utilityFunctions):
+            raise IndexError("Number of values in index_list is not equals to the number of utilityFunctions.")
         sum = 0
+        i = 0
         for e in self.utilityFunctions:
-            sum += (e[0].evaluate_at_index())*e[1]
+            index = index_list[i]
+            i+=1
+            eval = self.utilityFunctions[e]['function'].output(index)
+            sum += eval
         return sum
 
-class HillClimbingSolverRedis(HillClimbingSolver):
+    def get_Neighbor_nodes(self,index_list):
 
+        index_combination_list = []
+
+        for e in index_list:
+            tmp_list=[e-1,e,e+1]
+            #print("Neighbor nodes:" + str(tmp_list) )
+            index_combination_list.append(tmp_list)
+
+        permuted_indeces = itertools.product(*index_combination_list)
+        return permuted_indeces
+
+    # Given a list of indeces, get the x_values corresponding to those indices
+    def get_x_values(self, index_list):
+        if len(index_list) != len(self.utilityFunctions):
+            raise IndexError("Number of values in index_list is not equals to the number of utilityFunctions.")
+        i = 0
+        list = []
+        for e in self.utilityFunctions:
+            index = index_list[i]
+            i+=1
+            list.append(self.utilityFunctions[e]['function'].return_x_value(index))
+
+        return list
+
+    def set_indeces(self, index_list):
+        if len(index_list) != len(self.utilityFunctions):
+            raise IndexError("Number of values in index_list is not equals to the number of utilityFunctions.")
+
+        for i in range(len(self.utilityFunctions)):
+            index = index_list[i]
+            length = self.utilityFunctions[i]["function"].length
+            if index >= length or index < 0:
+                raise IndexError("Index out of bounds.")
+
+            self.utilityFunctions[i]["index"] = index
+
+        return
+    # Search the max value of the summation of the functions
     def search_max(self):
-        if len(self.utilityFunctions) == 0:
-            return
+        # get candidate values
+        current_indeces = []
+        for v in self.utilityFunctions.values():
+            current_indeces.append(v["index"])
+        current_value = self.evaluate_list(current_indeces)
+        #print("Starting indeces:")
+        #print(current_indeces)
+        #print("\n\n\n")
+        #neighbors = self.get_Neighbor_nodes(current_indeces)
+        changed = True
+        while changed:
+            neighbors = self.get_Neighbor_nodes(current_indeces)
+            changed = False
+            #print("Current value: " + str(current_value))
+            for e in neighbors:
+                #print(e)
 
-        index_changed = False
+                try:
+                    #print("Indeces:")
+                    #print(e)
+                    value = self.evaluate_list(e)
+                    #print("Value:")
+                    #print(value)
+                    if value > current_value and not sum(self.get_x_values(e))>self.max_memory:
+                        current_value = value
+                        current_indeces = e
+                        changed = True
+                        #print("Highest Value")
+                        #print(value)
+                        #print("Chosen indeces:")
+                        #print(current_indeces)
+                        #print(e)
+                        #print("\n")
+                except:
+                    #print("PING")
+                    continue
+                #sleep(2)
+            #print("##################3\n\n")
+        return current_indeces
+    # Same as search_max() with the difference that it returns a list of tuples with ( id, index) instead of a list of indeces
+    def search_max_with_ids(self):
+        # get candidate values
+        current_indeces = []
+        for v in self.utilityFunctions.values():
+            current_indeces.append(v["index"])
+        current_value = self.evaluate_list(current_indeces)
+        #print("Starting indeces:")
+        #print(current_indeces)
+        #print("\n\n\n")
+        #neighbors = self.get_Neighbor_nodes(current_indeces)
+        changed = True
+        while changed:
+            neighbors = self.get_Neighbor_nodes(current_indeces)
+            changed = False
+            #print("Current value: " + str(current_value))
+            for e in neighbors:
+                #print(e)
 
-        current_max = self.evaluate_function()
-        current_state = [x[0].index for x in self.utilityFunctions]
-        candidate_values = [x[0].index for x in self.utilityFunctions]
-        candidate_max_value = float("-inf")
+                try:
+                    #print("Indeces:")
+                    #print(e)
+                    value = self.evaluate_list(e)
+                    #print("Value:")
+                    #print(value)
+                    if value > current_value and not sum(self.get_x_values(e))>self.max_memory:
+                        current_value = value
+                        current_indeces = e
+                        changed = True
+                        #print("Highest Value")
+                        #print(value)
+                        #print("Chosen indeces:")
+                        #print(current_indeces)
+                        #print(e)
+                        #print("\n")
+                except:
+                    #print("PING")
+                    continue
+                #sleep(2)
+            #print("##################3\n\n")
+        i=0
+        list = []
+        # Tuple here are ( id , index ) where index is given as a result of the optimization
+        for e in self.utilityFunctions:
+            tuple = (e, current_indeces[i])
+            list.append(tuple)
+            i+=1
 
-        while True:
-            for e in self.utilityFunctions:
-                e[0].step_index_up()
-                tmp = self.evaluate_function()
-                # check whether the change increased the sum of utility functions and whether the mx amount of memory
-                # surpassed
-                if tmp > current_max and self.get_sum_of_x() <= self.max_memory and tmp > candidate_max_value:
-                    #print("sum of x values: %7d \nValue of function: %4f."%(self.get_sum_of_x(),self.evaluate_function()))
-                    candidate_values = [x[0].index for x in self.utilityFunctions]
-                    index_changed = True
-                    candidate_max_value = tmp
-                e[0].step_index_down()
-
-            for e in self.utilityFunctions:
-                e[0].step_index_down()
-                tmp = self.evaluate_function()
-                if tmp > current_max and self.get_sum_of_x() <= self.max_memory and tmp > candidate_max_value:
-                    #print("sum of x values: %7d \nValue of function: %4f."%(self.get_sum_of_x(),self.evaluate_function()))
-                    candidate_values = [x[0].index for x in self.utilityFunctions]
-                    index_changed = True
-                    candidate_max_value = tmp
-                e[0].step_index_up()
-
-            if index_changed:
-                for i in range(len(self.utilityFunctions)):
-                    self.utilityFunctions[i][0].index = candidate_values[i]
-
-                current_state = candidate_values
-                #print(current_state)
-                current_max = self.evaluate_function()
-                index_changed = False
-            else:
-                # Iteration is over
-
-
-                # Here we are leaving the index of each function to the value that maximizes the sum
-                for i in range(len(self.utilityFunctions)):
-                    self.utilityFunctions[i][0].index = current_state[i]
-
-                r = [(x[0].service_id,x[0].return_x_value()) for x in self.utilityFunctions]
-
-                #current_state are the indeces of each function, NOT the x values
-                return r
-                #return r
+        return list
