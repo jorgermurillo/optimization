@@ -185,7 +185,7 @@ for e in solution:
     Total_blocks_solver =  int(alloc * average_memory_per_object)
 
     print("New memory: %d  (%f  mb)" % (Total_blocks_solver, float(Total_blocks_solver) / 1024 / 1024))
-    r.config_set("maxmemory", str(memory))
+    r.config_set("maxmemory", str(Total_blocks_solver))
     print("\n")
     
 
