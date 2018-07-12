@@ -152,17 +152,18 @@ for key in redis_instances:
 
 
 print("Solver!!!")
-
+# solution is a list of tuples with the structure: (id_of_instance, index)
 solution = solver.search_max_with_ids()
-Optimized_blocks = [x[1] for x in solution]
-print(Optimized_blocks)
+# Here we get the actual number of blocks for each instance
+Optimized_blocks =  solver.get_x_values([x[1] for x in solution])
+
 
 print("Solved!!")
 print("Block allocation: " + str(Optimized_blocks))
 print("Value of sumation function: " + str(solver.evaluate_list(Optimized_blocks)))
-print("Total Blocks = %d" % ( sum(solver.get_x_values( Optimized_blocks ) )))
+print("Total Blocks = %d" % ( sum( Optimized_blocks ) ))
 #Remaining memory after allocation (in certain cases not all the memory is partitioned, when the MRCs have few lines with small sizes for cache memory)
-remaining = int(Total_blocks_solver - sum(solver.get_x_values( Optimized_blocks )))
+remaining = int(Total_blocks_solver - sum( Optimized_blocks ))
 print("Remaining blocks: %d"%(remaining))
 #added_blocks is the amount of extra blocks that each instance gets when
 added_blocks = int(remaining / len(Optimized_blocks))
