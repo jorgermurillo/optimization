@@ -173,9 +173,9 @@ class HillClimbingSolver(object):
             #print("##################3\n\n")
         i=0
         list = []
-        # Tuple here are ( id , index ) where index is given as a result of the optimization
+        # Tuple here are ( id , index, size) where index is given as a result of the optimization
         for e in self.utilityFunctions:
-            tuple = (e, current_indeces[i])
+            tuple = (e, current_indeces[i], self.utilityFunctions[e]["function"].return_x_value(current_indeces[i]))
             list.append(tuple)
             i+=1
 

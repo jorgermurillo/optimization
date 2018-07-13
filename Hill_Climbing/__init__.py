@@ -163,7 +163,7 @@ Optimized_blocks =  solver.get_x_values(indeces)
 print("Solved!!")
 print("Block allocation: " + str(Optimized_blocks))
 print("Value of sumation function: " + str(solver.evaluate_list(indeces)))
-print("Total Blocks = %d" % ( sum( Optimized_blocks ) ))
+print("Total Blocks used = %d" % ( sum( Optimized_blocks ) ))
 #Remaining memory after allocation (in certain cases not all the memory is partitioned, when the MRCs have few lines with small sizes for cache memory)
 remaining = int(Total_blocks_solver - sum( Optimized_blocks ))
 print("Remaining blocks: %d"%(remaining))
@@ -171,6 +171,8 @@ print("Remaining blocks: %d"%(remaining))
 added_blocks = int(remaining / len(Optimized_blocks))
 print("Extra blocks per instance: %d"%(added_blocks))
 print("\n")
+
+
 for e in solution:
 
     r = redis.Redis(host=HOST, port=e[0])
@@ -179,16 +181,16 @@ for e in solution:
 
 
     if added_blocks > 1:
-        alloc = int(e[1]) + added_blocks
+        alloc = int(e[2]) + added_blocks
     else:
-        alloc = int(e[1])
+        alloc = int(e[2])
     # This shows how many 'blocks' we should allocate to each Redis instance
     print("Block allocation: " + str(alloc))
     # This shows how much memory we should allocate to each Redis instance
-    Total_blocks_solver =  int(alloc * average_memory_per_object)
+    Blocks_solver =  int(alloc * average_memory_per_object)
 
-    print("New memory: %d  (%f  mb)" % (Total_blocks_solver, float(Total_blocks_solver) / 1024 / 1024))
-    r.config_set("maxmemory", str(Total_blocks_solver))
+    print("New memory: %d  (%f  mb)" % (Blocks_solver, float(Blocks_solver) / 1024 / 1024))
+    r.config_set("maxmemory", str(Blocks_solver))
     print("\n")
     
 
