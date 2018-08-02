@@ -28,7 +28,7 @@ def getCurves():
     return MRC_curves
 
 def getMRCcurves():
-    list_of_mrc_files = sys.argv[1:]
+    list_of_mrc_files = sys.argv[2:]
 
     MRC_curves = []
     Redis_instance_dict = {}
@@ -47,7 +47,7 @@ def getMRCcurves():
 
 
 def getMRCcurves2():
-    list_of_mrc_files = sys.argv[1:]
+    list_of_mrc_files = sys.argv[2:]
 
     MRC_curves = []
     Redis_instance_dict = {}
@@ -72,7 +72,7 @@ def getMRCcurves2():
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
 
 
-for e in sys.argv[1:]:
+for e in sys.argv[2:]:
     print(e)
 
 HOST = "127.0.0.1"
@@ -83,7 +83,9 @@ MRC_files = getMRCcurves2()
 weight = 1
 frequency = 1
 #Total_memory is given in bytes
-Total_memory = 524288000 # 500MB
+
+Total_memory = int(sys.argv[1])
+#524288000 # 500MB
 #Total_memory = 1048576000 #1000 MB
 redis_instances = OrderedDict()
 
